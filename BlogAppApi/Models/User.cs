@@ -20,7 +20,6 @@ namespace BlogAppApi.Models
         public bool IsSoftDeleted { get; set; } = false;
 
         public ICollection<BlogPost> BlogPosts { get; set; } = new List<BlogPost>();
-        public ICollection<Comment> Comments { get; set; } = new List<Comment>();
 
     }
 }

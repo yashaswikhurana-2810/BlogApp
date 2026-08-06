@@ -22,6 +22,5 @@ namespace BlogAppApi.Models
         public Guid CategoryId { get; set; }
         public Category Category { get; set; }
 
-        public ICollection<Comment> Comments { get; set; } = new List<Comment>();
     }
 }
