@@ -20,8 +20,6 @@ namespace BlogAppApi.Services
        public async Task<IEnumerable<BlogDto>> GetAllBlogsAsync()
         {
             var Blogs = await _context.BlogPosts
-                .Include(a => a.User)
-                .Include(c => c.Category)
                 .Select(b => new BlogDto
                 {
                     Id = b.Id,
