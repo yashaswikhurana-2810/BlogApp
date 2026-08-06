@@ -8,17 +8,11 @@ using System.ComponentModel;
 
 namespace BlogAppApi.Services
 {
-    public class CategoryService:ICategoryService
+    public class CategoryService(ApplicationDbContext context):ICategoryService
     {
-        private readonly ApplicationDbContext _context; 
-
-        public CategoryService( ApplicationDbContext context)
-        {
-            _context = context;
-        }
         public async Task<bool> CreateCategoryAsync(CreateCategoryDto dto)
         {
-            if (await _context.Categories.AnyAsync(c => c.Name == dto.Name))
+            if (await context.Categories.AnyAsync(c => c.Name == dto.Name))
             {
                 return false;
             }
@@ -29,16 +23,16 @@ namespace BlogAppApi.Services
                 Name = dto.Name
             };
 
-            await _context.Categories.AddAsync(category);
+            await context.Categories.AddAsync(category);
 
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
 
             return true;
         }
 
         public async Task<List<Category>> GetAllCategoriesAsync()
         {
-            return await _context.Categories.ToListAsync();
+            return await context.Categories.ToListAsync();
         }
     }
 }

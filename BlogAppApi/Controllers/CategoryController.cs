@@ -13,20 +13,14 @@ namespace BlogAppApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class CategoryController : ControllerBase
+    public class CategoryController(ICategoryService categoryService) : ControllerBase
     {
-        private readonly ICategoryService _categoryService; 
-
-        public CategoryController(ICategoryService categoryService)
-        {
-            _categoryService = categoryService;
-        }
 
         [Authorize]
         [HttpPost]
         public async Task<IActionResult> CreateCategory(CreateCategoryDto dto)
         {
-            var result = await _categoryService.CreateCategoryAsync(dto);
+            var result = await categoryService.CreateCategoryAsync(dto);
 
             if (!result)
             {
@@ -40,7 +34,7 @@ namespace BlogAppApi.Controllers
         [HttpGet]
         public async Task<List<Category>> GetCategories()
         {
-            List<Category> result = await  _categoryService.GetAllCategoriesAsync();
+            List<Category> result = await  categoryService.GetAllCategoriesAsync();
 
             return result;
         }

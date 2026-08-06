@@ -10,20 +10,13 @@ namespace BlogAppApi.Controllers
     [Route("api/[controller]")]
     [ApiController]
 
-    public class BlogPostsController : ControllerBase
+    public class BlogPostsController(IBlogService blogService) : ControllerBase
     {
-        private readonly IBlogService _blogService;
-
-        public BlogPostsController(IBlogService blogService)
-        {
-            _blogService = blogService;
-        }
-
         // GET: api/blogposts
         [HttpGet]
         public async Task<IActionResult> GetAllBlogs()
         {
-            var blogs = await _blogService.GetAllBlogsAsync();
+            var blogs = await blogService.GetAllBlogsAsync();
 
             return Ok(blogs);
         }
@@ -32,7 +25,7 @@ namespace BlogAppApi.Controllers
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetBlogById(Guid id)
         {
-            var blog = await _blogService.GetBlogByIdAsync(id);
+            var blog = await blogService.GetBlogByIdAsync(id);
 
             if (blog == null)
                 return NotFound("Blog not found.");
@@ -47,7 +40,7 @@ namespace BlogAppApi.Controllers
         {
             var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
-            var result = await _blogService.CreateBlogAsync(dto, userId);
+            var result = await blogService.CreateBlogAsync(dto, userId);
 
             if (!result)
                 return BadRequest("Unable to create blog.");
@@ -62,7 +55,7 @@ namespace BlogAppApi.Controllers
         {
             var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
-            var result = await _blogService.UpdateBlogAsync(id, dto, userId);
+            var result = await blogService.UpdateBlogAsync(id, dto, userId);
 
             if (!result)
                 return NotFound("Blog not found or you are not authorized.");
@@ -77,7 +70,7 @@ namespace BlogAppApi.Controllers
         {
             var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
-            var result = await _blogService.DeleteBlogAsync(id, userId);
+            var result = await blogService.DeleteBlogAsync(id, userId);
 
             if (!result)
                 return NotFound("Blog not found or you are not authorized.");
