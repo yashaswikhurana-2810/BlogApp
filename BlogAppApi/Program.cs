@@ -7,6 +7,8 @@ using System.Text;
 DotNetEnv.Env.Load();
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Configuration.AddEnvironmentVariables();
+
 
 var cs = builder.Configuration.GetConnectionString("DefaultConnection");
 
@@ -18,6 +20,17 @@ builder.Services.AddOpenApi();
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IBlogService, BlogService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("ReactFrontend", policy =>
+    {
+        policy
+            .WithOrigins("http://localhost:3000", "https://localhost:3000")
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
 {
     options.TokenValidationParameters = new TokenValidationParameters
@@ -46,6 +59,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseCors("ReactFrontend");
 app.UseAuthentication();
 app.UseAuthorization();
 

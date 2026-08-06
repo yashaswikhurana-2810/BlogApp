@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using BlogAppApi.Data;
 using BlogAppApi.DTOs;
@@ -9,6 +9,8 @@ namespace BlogAppApi.Services
     public interface IBlogService
     {
         Task<IEnumerable<BlogDto>> GetAllBlogsAsync();
+
+        Task<IEnumerable<BlogDto>> GetBlogsByUserAsync(Guid userId);
 
         Task<BlogDto?> GetBlogByIdAsync(Guid id);
 

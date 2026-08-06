@@ -1,4 +1,4 @@
-﻿using BlogAppApi.DTOs;
+using BlogAppApi.DTOs;
 using BlogAppApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -17,6 +17,18 @@ namespace BlogAppApi.Controllers
         public async Task<IActionResult> GetAllBlogs()
         {
             var blogs = await blogService.GetAllBlogsAsync();
+
+            return Ok(blogs);
+        }
+
+        // GET: api/blogposts/my  — returns only the authenticated user's posts
+        [Authorize]
+        [HttpGet("my")]
+        public async Task<IActionResult> GetMyBlogs()
+        {
+            var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+            var blogs = await blogService.GetBlogsByUserAsync(userId);
 
             return Ok(blogs);
         }
