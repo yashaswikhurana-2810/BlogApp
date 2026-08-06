@@ -18,7 +18,8 @@ namespace BlogAppApi.Data
         {
             modelBuilder.Entity<User>()
                 .HasQueryFilter(u => !u.IsSoftDeleted);
-
+            modelBuilder.Entity<BlogPost>()
+                .HasQueryFilter(b => !b.IsDeleted);
 
             base.OnModelCreating(modelBuilder);
         }

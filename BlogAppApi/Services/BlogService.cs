@@ -13,7 +13,7 @@ namespace BlogAppApi.Services
       
        public async Task<IEnumerable<BlogDto>> GetAllBlogsAsync()
         {
-            var Blogs = await _context.BlogPosts
+            var Blogs = await context.BlogPosts
                 .Select(b => new BlogDto
                 {
                     Id = b.Id,
@@ -104,6 +104,7 @@ namespace BlogAppApi.Services
         public async Task<bool> DeleteBlogAsync(Guid userId,Guid id)
         {
             var blog = await context.BlogPosts.FirstOrDefaultAsync(b => b.Id == id);
+            Console.WriteLine(blog);
 
             if (blog == null)
                 return false;

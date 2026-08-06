@@ -47,11 +47,13 @@ namespace BlogAppApi.Controllers
         public async Task<IActionResult> Login(LoginDto dto)
         {
             User user = await _context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
-
+            
             if (user == null)
             {
                 return BadRequest("Please Register First");
             }
+
+            var Id = user.Id;
 
             if (!BCrypt.Net.BCrypt.Verify(dto.Password, user.Password))
             {
@@ -59,7 +61,9 @@ namespace BlogAppApi.Controllers
             }
             var token = _jwtService.GenerateToken(user);
             return Ok(new {Message = "Login Successful",
-                    Token = token});
+                    Token = token,
+                   Id
+            });
         }
 
 
