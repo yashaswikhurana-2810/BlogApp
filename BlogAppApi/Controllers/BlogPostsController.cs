@@ -63,14 +63,14 @@ namespace BlogAppApi.Controllers
             return Ok("Blog updated successfully.");
         }
 
-        // DELETE: api/blogposts/{id}
         [Authorize]
         [HttpDelete("{id:guid}")]
         public async Task<IActionResult> DeleteBlog(Guid id)
         {
             var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
-            var result = await blogService.DeleteBlogAsync(id, userId);
+            var result = await blogService.DeleteBlogAsync(userId,id);
+            
 
             if (!result)
                 return NotFound("Blog not found or you are not authorized.");
