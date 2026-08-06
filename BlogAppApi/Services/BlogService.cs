@@ -8,18 +8,12 @@ using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace BlogAppApi.Services
 {
-    public class BlogService:IBlogService
+    public class BlogService(ApplicationDbContext context):IBlogService
     {
-        private readonly ApplicationDbContext _context;
-
-        public BlogService(ApplicationDbContext context)
-        {
-            _context = context;
-        }
       
        public async Task<IEnumerable<BlogDto>> GetAllBlogsAsync()
         {
-            var Blogs = await _context.BlogPosts
+            var Blogs = await context.BlogPosts
                 .Include(a => a.User)
                 .Include(c => c.Category)
                 .Select(b => new BlogDto
@@ -42,7 +36,7 @@ namespace BlogAppApi.Services
 
         public async Task<BlogDto?> GetBlogByIdAsync(Guid id)
         {
-            var Blog = await _context.BlogPosts
+            var Blog = await context.BlogPosts
                 .Include(b => b.User)
                 .Include(b => b.Category)
                 .Where(b => b.Id ==id)
@@ -80,16 +74,16 @@ namespace BlogAppApi.Services
 
             };
 
-            await _context.BlogPosts.AddAsync(blog);
+            await context.BlogPosts.AddAsync(blog);
 
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
 
             return true;
 
         }
         public async Task<bool> UpdateBlogAsync(Guid id,UpdateBlogDto dto,Guid userId)
         {
-            var blog = await _context.BlogPosts.FirstOrDefaultAsync(b => b.Id == id);
+            var blog = await context.BlogPosts.FirstOrDefaultAsync(b => b.Id == id);
 
             if (blog == null)
                 return false;
@@ -104,14 +98,14 @@ namespace BlogAppApi.Services
             blog.IsPublished = dto.IsPublished;
             blog.UpdatedAt = DateTime.UtcNow;
 
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
 
             return true;
 
         }
         public async Task<bool> DeleteBlogAsync(Guid userId,Guid id)
         {
-            var blog = await _context.BlogPosts.FirstOrDefaultAsync(b => b.Id == id);
+            var blog = await context.BlogPosts.FirstOrDefaultAsync(b => b.Id == id);
 
             if (blog == null)
                 return false;
@@ -119,9 +113,9 @@ namespace BlogAppApi.Services
             if (blog.UserId != userId)
                 return false;
 
-            _context.BlogPosts.Remove(blog);
+            context.BlogPosts.Remove(blog);
 
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
 
             return true;
 
