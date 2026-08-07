@@ -59,6 +59,8 @@ namespace BlogAppApi.Controllers
             {
                 return BadRequest("Email or Password is Wrong");
             }
+            
+            //if password is correct
             var token = _jwtService.GenerateToken(user);
             return Ok(new {Message = "Login Successful",
                     Token = token,
