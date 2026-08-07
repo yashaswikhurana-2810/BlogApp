@@ -1,12 +1,7 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using BlogAppApi.Data;
+﻿using Microsoft.AspNetCore.Mvc;
 using BlogAppApi.DTOs;
 using BlogAppApi.Models;
 using BlogAppApi.Services;
-using System.Security.Claims;
-using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.AspNetCore.Authorization;
 
 namespace BlogAppApi.Controllers
@@ -38,7 +33,19 @@ namespace BlogAppApi.Controllers
 
             return result;
         }
+        [Authorize]
+        [HttpDelete("{categoryId}")]
+        public async Task<IActionResult> DeleteCategory(Guid categoryId)
+        {
+            var result = await categoryService.DeleteCategoryAsync(categoryId);
 
+            if (!result)
+            {
+                return NotFound("Category not found.");
+            }
+
+            return Ok("Category deleted successfully.");
+        }
 
     }
 }
