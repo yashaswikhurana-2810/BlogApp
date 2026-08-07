@@ -34,5 +34,17 @@ namespace BlogAppApi.Services
         {
             return await context.Categories.ToListAsync();
         }
+
+        public async Task<bool> DeleteCategoryAsync(Guid categoryId)
+        {
+            var category = await context.Categories.FindAsync(categoryId);
+            if (category == null)
+            {
+                return false;
+            }
+            context.Categories.Remove(category);
+            await context.SaveChangesAsync();
+            return true;
+        }
     }
 }

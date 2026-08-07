@@ -6,5 +6,6 @@ namespace BlogAppApi.Services
     {
         Task<bool> CreateCategoryAsync(CreateCategoryDto dto);
         Task<List<Category>> GetAllCategoriesAsync();
+        Task<bool> DeleteCategoryAsync(Guid categoryId);
     }
 }
