@@ -1,10 +1,7 @@
 ﻿using BlogAppApi.DTOs;
 using BlogAppApi.Models;
 using BlogAppApi.Data;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.ComponentModel;
 
 namespace BlogAppApi.Services
 {

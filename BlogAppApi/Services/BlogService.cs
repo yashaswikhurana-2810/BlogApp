@@ -2,9 +2,6 @@ using BlogAppApi.Data;
 using BlogAppApi.DTOs;
 using BlogAppApi.Models;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Mvc;
-using System.Runtime.CompilerServices;
-using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace BlogAppApi.Services
 {
@@ -140,7 +137,7 @@ namespace BlogAppApi.Services
             if (blog.UserId != userId)
                 return false;
 
-            context.BlogPosts.Remove(blog);
+            blog.IsDeleted = true;
 
             await context.SaveChangesAsync();
 

@@ -6,12 +6,12 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace BlogAppApi.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class CategoryController(ICategoryService categoryService) : ControllerBase
     {
 
-        [Authorize]
         [HttpPost]
         public async Task<IActionResult> CreateCategory(CreateCategoryDto dto)
         {
@@ -25,7 +25,6 @@ namespace BlogAppApi.Controllers
             return Ok("Category created successfully.");
         }
 
-        [Authorize]
         [HttpGet]
         public async Task<List<Category>> GetCategories()
         {
@@ -33,7 +32,6 @@ namespace BlogAppApi.Controllers
 
             return result;
         }
-        [Authorize]
         [HttpDelete("{categoryId}")]
         public async Task<IActionResult> DeleteCategory(Guid categoryId)
         {

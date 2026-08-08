@@ -1,9 +1,5 @@
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using BlogAppApi.Data;
 using BlogAppApi.DTOs;
-using BlogAppApi.Models;
-using BlogAppApi.Services;
+
 namespace BlogAppApi.Services
 {
     public interface IBlogService
