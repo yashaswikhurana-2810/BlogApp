@@ -51,7 +51,7 @@ namespace BlogAppApi.Controllers
             AuthResponseDto token;
             try
             {
-                token = await jwtService.GenerateTokenAsync(user, HttpContext.RequestAborted);
+                token = await jwtService.GenerateTokenAsync(user);
             }
             catch (HttpRequestException)
             {
@@ -75,7 +75,7 @@ namespace BlogAppApi.Controllers
         {
             try
             {
-                var token = await jwtService.RefreshTokenAsync(dto, HttpContext.RequestAborted);
+                var token = await jwtService.RefreshTokenAsync(dto);
                 return Ok(new { Token = token.AccessToken, RefreshToken = token.RefreshToken, ExpiresIn = token.ExpiresIn });
             }
             catch (UnauthorizedAccessException)

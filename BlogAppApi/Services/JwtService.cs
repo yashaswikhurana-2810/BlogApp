@@ -1,101 +1,92 @@
 using System.Net.Http.Json;
 using System.Security.Cryptography;
 using System.Text;
-using BlogAppApi.Data;
 using BlogAppApi.DTOs;
 using BlogAppApi.Models;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace BlogAppApi.Services;
 
 public class JwtService : IJwtService
 {
     private readonly IHttpClientFactory _httpClientFactory;
-    private readonly ApplicationDbContext _context;
+    private readonly IMemoryCache _cache;
     private readonly IConfiguration _configuration;
 
-    public JwtService(IHttpClientFactory httpClientFactory, ApplicationDbContext context, IConfiguration configuration)
+    public JwtService(IHttpClientFactory httpClientFactory, IMemoryCache cache, IConfiguration configuration)
     {
         _httpClientFactory = httpClientFactory;
-        _context = context;
+        _cache = cache;
         _configuration = configuration;
     }
 
-    public async Task<AuthResponseDto> GenerateTokenAsync(User user, CancellationToken cancellationToken = default)
+    public async Task<AuthResponseDto> GenerateTokenAsync(User user)
     {
         var response = await Client.PostAsJsonAsync("Auth/token", new TokenRequestDto
         {
             ClientId = RequiredSetting("AUTH_CLIENT_ID"),
             ClientSecret = RequiredSetting("AUTH_CLIENT_SECRET"),
             Email = user.Email
-        }, cancellationToken);
-
-        var token = await ReadTokenResponseAsync(response, cancellationToken);
-        _context.UserAuthTokens.Add(new UserAuthToken
-        {
-            UserId = user.Id,
-            AccessTokenHash = Hash(token.AccessToken),
-            RefreshTokenHash = Hash(token.RefreshToken),
-            ExpiresAt = DateTime.UtcNow.AddSeconds(token.ExpiresIn)
         });
-        await _context.SaveChangesAsync(cancellationToken);
+
+        var token = await ReadTokenResponseAsync(response);
+        StoreSession(token, user.Id);
         return token;
     }
 
-    public async Task<AuthResponseDto> RefreshTokenAsync(RefreshTokenDto refreshToken, CancellationToken cancellationToken = default)
+    public async Task<AuthResponseDto> RefreshTokenAsync(RefreshTokenDto refreshToken)
     {
-        var session = await _context.UserAuthTokens.SingleOrDefaultAsync(
-            x => x.RefreshTokenHash == Hash(refreshToken.RefreshToken), cancellationToken);
-        if (session is null)
-            throw new UnauthorizedAccessException("Refresh token is not associated with a BlogApp user.");
+        if (!_cache.TryGetValue<Guid>(RefreshKey(refreshToken.RefreshToken), out var userId))
+            throw new UnauthorizedAccessException("Refresh token is not associated with this BlogApp session.");
 
-        var response = await Client.PostAsJsonAsync("Auth/refresh", refreshToken, cancellationToken);
-        var token = await ReadTokenResponseAsync(response, cancellationToken);
-        session.AccessTokenHash = Hash(token.AccessToken);
-        session.RefreshTokenHash = Hash(token.RefreshToken);
-        session.ExpiresAt = DateTime.UtcNow.AddSeconds(token.ExpiresIn);
-        await _context.SaveChangesAsync(cancellationToken);
+        var response = await Client.PostAsJsonAsync("Auth/refresh", refreshToken);
+        var token = await ReadTokenResponseAsync(response);
+        _cache.Remove(RefreshKey(refreshToken.RefreshToken));
+        StoreSession(token, userId);
         return token;
     }
 
-    public async Task<bool> ValidateTokenAsync(string accessToken, CancellationToken cancellationToken = default)
+    public async Task<bool> ValidateTokenAsync(string accessToken)
     {
-        var response = await Client.PostAsJsonAsync("Auth/validate", accessToken, cancellationToken);
+        var response = await Client.PostAsJsonAsync("Auth/validate", accessToken);
         return response.IsSuccessStatusCode;
     }
 
-    public async Task RevokeTokenAsync(string accessToken, CancellationToken cancellationToken = default)
+    public async Task RevokeTokenAsync(string accessToken)
     {
-        var response = await Client.PostAsJsonAsync("Auth/revoke", accessToken, cancellationToken);
+        var response = await Client.PostAsJsonAsync("Auth/revoke", accessToken);
         if (!response.IsSuccessStatusCode)
             throw new UnauthorizedAccessException("The access token could not be revoked.");
 
-        var session = await _context.UserAuthTokens.SingleOrDefaultAsync(
-            x => x.AccessTokenHash == Hash(accessToken), cancellationToken);
-        if (session is not null)
-        {
-            _context.UserAuthTokens.Remove(session);
-            await _context.SaveChangesAsync(cancellationToken);
-        }
+        _cache.Remove(AccessKey(accessToken));
     }
 
-    public Task<Guid?> GetUserIdAsync(string accessToken, CancellationToken cancellationToken = default) =>
-        _context.UserAuthTokens.Where(x => x.AccessTokenHash == Hash(accessToken))
-            .Select(x => (Guid?)x.UserId).SingleOrDefaultAsync(cancellationToken);
+    public Task<Guid?> GetUserIdAsync(string accessToken) =>
+        Task.FromResult(_cache.TryGetValue<Guid>(AccessKey(accessToken), out var userId)
+            ? (Guid?)userId
+            : null);
+
+    private void StoreSession(AuthResponseDto token, Guid userId)
+    {
+        _cache.Set(AccessKey(token.AccessToken), userId, TimeSpan.FromSeconds(token.ExpiresIn));
+        _cache.Set(RefreshKey(token.RefreshToken), userId, TimeSpan.FromDays(30));
+    }
 
     private HttpClient Client => _httpClientFactory.CreateClient("IdentityHub");
 
     private string RequiredSetting(string key) => _configuration[key]
         ?? throw new InvalidOperationException($"Missing required configuration value '{key}'.");
 
-    private static async Task<AuthResponseDto> ReadTokenResponseAsync(HttpResponseMessage response, CancellationToken cancellationToken)
+    private static async Task<AuthResponseDto> ReadTokenResponseAsync(HttpResponseMessage response)
     {
         if (!response.IsSuccessStatusCode)
             throw new UnauthorizedAccessException("Identity Hub rejected the token request.");
 
-        return await response.Content.ReadFromJsonAsync<AuthResponseDto>(cancellationToken: cancellationToken)
+        return await response.Content.ReadFromJsonAsync<AuthResponseDto>()
             ?? throw new InvalidOperationException("Identity Hub returned an empty token response.");
     }
 
+    private static string AccessKey(string token) => "access:" + Hash(token);
+    private static string RefreshKey(string token) => "refresh:" + Hash(token);
     private static string Hash(string token) => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(token)));
 }

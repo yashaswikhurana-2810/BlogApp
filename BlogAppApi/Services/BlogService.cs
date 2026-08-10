@@ -129,7 +129,6 @@ namespace BlogAppApi.Services
         public async Task<bool> DeleteBlogAsync(Guid userId,Guid id)
         {
             var blog = await context.BlogPosts.FirstOrDefaultAsync(b => b.Id == id);
-            Console.WriteLine(blog);
 
             if (blog == null)
                 return false;

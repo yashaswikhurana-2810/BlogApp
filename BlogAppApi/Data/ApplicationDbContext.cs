@@ -20,12 +20,6 @@ namespace BlogAppApi.Data
                 .HasQueryFilter(u => !u.IsSoftDeleted);
             modelBuilder.Entity<BlogPost>()
                 .HasQueryFilter(b => !b.IsDeleted);
-            modelBuilder.Entity<UserAuthToken>()
-                .HasIndex(t => t.AccessTokenHash)
-                .IsUnique();
-            modelBuilder.Entity<UserAuthToken>()
-                .HasIndex(t => t.RefreshTokenHash)
-                .IsUnique();
 
             base.OnModelCreating(modelBuilder);
         }
@@ -33,6 +27,5 @@ namespace BlogAppApi.Data
         public DbSet<User> Users  => Set<User>();
         public DbSet<BlogPost> BlogPosts => Set<BlogPost>();
         public DbSet<Category> Categories => Set<Category>();
-        public DbSet<UserAuthToken> UserAuthTokens => Set<UserAuthToken>();
     }
 }

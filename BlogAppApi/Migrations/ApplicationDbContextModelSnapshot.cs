@@ -110,41 +110,6 @@ namespace BlogAppApi.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("BlogAppApi.Models.UserAuthToken", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("AccessTokenHash")
-                        .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("nvarchar(64)");
-
-                    b.Property<DateTime>("ExpiresAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("RefreshTokenHash")
-                        .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("nvarchar(64)");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AccessTokenHash")
-                        .IsUnique();
-
-                    b.HasIndex("RefreshTokenHash")
-                        .IsUnique();
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("UserAuthTokens");
-                });
-
             modelBuilder.Entity("BlogAppApi.Models.BlogPost", b =>
                 {
                     b.HasOne("BlogAppApi.Models.Category", "Category")
@@ -160,17 +125,6 @@ namespace BlogAppApi.Migrations
                         .IsRequired();
 
                     b.Navigation("Category");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("BlogAppApi.Models.UserAuthToken", b =>
-                {
-                    b.HasOne("BlogAppApi.Models.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
 
                     b.Navigation("User");
                 });
