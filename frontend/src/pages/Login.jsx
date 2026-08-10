@@ -23,12 +23,13 @@ export default function Login() {
     setIsLoading(true);
     try {
       const res = await login(data);
-      const { token, id } = res.data;
+      const { token, refreshToken, id } = res.data;
 
       // Store user info + token
       setAuth(
         { id, name: data.email.split('@')[0], email: data.email },
-        token
+        token,
+        refreshToken
       );
 
       toast.success('Welcome back! 🎉');

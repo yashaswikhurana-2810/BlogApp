@@ -1,9 +1,8 @@
 using BlogAppApi.Data;
 using BlogAppApi.Services;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+using BlogAppApi.Authentication;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
 DotNetEnv.Env.Load();
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,6 +16,12 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 builder.Services.AddControllers();
 builder.Services.AddScoped<IJwtService, JwtService>();
+builder.Services.AddHttpClient("IdentityHub", client =>
+{
+    var authUrl = builder.Configuration["AUTH_URL"]
+        ?? throw new InvalidOperationException("Missing required configuration value 'AUTH_URL'.");
+    client.BaseAddress = new Uri(authUrl.TrimEnd('/') + "/");
+});
 builder.Services.AddScoped<IBlogService, BlogService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 
@@ -31,29 +36,16 @@ builder.Services.AddCors(options =>
     });
 });
 
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
-{
-    options.TokenValidationParameters = new TokenValidationParameters
-    {
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidateLifetime =true,
-        ValidateIssuerSigningKey = true,
-
-        ValidIssuer = builder.Configuration["Jwt:Issuer"],
-        ValidAudience = builder.Configuration["Jwt:Audience"],
-
-        IssuerSigningKey = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!)
-            )
-
-    };
-});
+builder.Services.AddAuthentication("IdentityHub")
+    .AddScheme<AuthenticationSchemeOptions, IdentityHubAuthenticationHandler>("IdentityHub", null);
+builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
 app.UseHttpsRedirection();
 app.UseCors("ReactFrontend");
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapControllers();
 

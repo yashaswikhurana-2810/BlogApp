@@ -1,7 +1,9 @@
-﻿namespace BlogAppApi.DTOs
+namespace BlogAppApi.DTOs;
+
+public class AuthResponseDto
 {
-    public class AuthResponseDto
-    {
-        public string Token { get; set; } = string.Empty;
-    }
+    public string AccessToken { get; set; } = string.Empty;
+    public string RefreshToken { get; set; } = string.Empty;
+    public string TokenType { get; set; } = "Bearer";
+    public int ExpiresIn { get; set; }
 }

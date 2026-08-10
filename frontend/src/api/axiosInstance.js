@@ -20,10 +20,31 @@ api.interceptors.request.use((config) => {
 // Response interceptor — handle 401
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      useAuthStore.getState().logout();
+  async (error) => {
+    const originalRequest = error.config;
+    const auth = useAuthStore.getState();
+
+    if (
+      error.response?.status === 401 &&
+      !originalRequest?._retry &&
+      auth.refreshToken &&
+      !originalRequest?.url?.endsWith('/api/auth/refresh')
+    ) {
+      originalRequest._retry = true;
+      try {
+        const response = await api.post('/api/auth/refresh', {
+          refreshToken: auth.refreshToken,
+        });
+        const { token, refreshToken } = response.data;
+        auth.setAuth(auth.user, token, refreshToken);
+        originalRequest.headers.Authorization = `Bearer ${token}`;
+        return api(originalRequest);
+      } catch {
+        auth.logout();
+      }
     }
+
+    if (error.response?.status === 401) auth.logout();
     return Promise.reject(error);
   }
 );

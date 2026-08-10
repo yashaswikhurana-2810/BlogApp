@@ -1,14 +1,13 @@
-﻿using BlogAppApi.DTOs;
+using BlogAppApi.DTOs;
 using BlogAppApi.Models;
-using Microsoft.AspNetCore.Mvc;
 
-namespace BlogAppApi.Services
+namespace BlogAppApi.Services;
+
+public interface IJwtService
 {
-    public interface IJwtService
-    {
-        String GenerateToken(TokenRequestDto user);
-        bool ValidateToken(string accessToken);
-        String GetRefreshToken(RefreshTokenDto refreshToken);
-        bool RevokeToken(string accessToken);
-    }
+    Task<AuthResponseDto> GenerateTokenAsync(User user, CancellationToken cancellationToken = default);
+    Task<AuthResponseDto> RefreshTokenAsync(RefreshTokenDto refreshToken, CancellationToken cancellationToken = default);
+    Task<bool> ValidateTokenAsync(string accessToken, CancellationToken cancellationToken = default);
+    Task RevokeTokenAsync(string accessToken, CancellationToken cancellationToken = default);
+    Task<Guid?> GetUserIdAsync(string accessToken, CancellationToken cancellationToken = default);
 }

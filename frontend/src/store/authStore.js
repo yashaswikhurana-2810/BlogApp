@@ -6,10 +6,11 @@ export const useAuthStore = create(
     (set) => ({
       user: null,      // { id, name, email }
       token: null,
+      refreshToken: null,
 
-      setAuth: (user, token) => set({ user, token }),
+      setAuth: (user, token, refreshToken = null) => set({ user, token, refreshToken }),
 
-      logout: () => set({ user: null, token: null }),
+      logout: () => set({ user: null, token: null, refreshToken: null }),
 
       isAuthenticated: () => {
         // Derived value — call inside components
@@ -18,7 +19,7 @@ export const useAuthStore = create(
     }),
     {
       name: 'blogapp-auth', // localStorage key
-      partialize: (state) => ({ user: state.user, token: state.token }),
+      partialize: (state) => ({ user: state.user, token: state.token, refreshToken: state.refreshToken }),
     }
   )
 );

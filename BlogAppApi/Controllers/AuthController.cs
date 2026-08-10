@@ -35,7 +35,7 @@ namespace BlogAppApi.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login(LoginDto dto)
         {
-            User user = await context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
+            User? user = await context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
             
             if (user == null)
             {
@@ -48,11 +48,44 @@ namespace BlogAppApi.Controllers
             {
                 return BadRequest("Email or Password is Wrong");
             }
-            var token = jwtService.GenerateToken(user);
+            AuthResponseDto token;
+            try
+            {
+                token = await jwtService.GenerateTokenAsync(user, HttpContext.RequestAborted);
+            }
+            catch (HttpRequestException)
+            {
+                return StatusCode(StatusCodes.Status503ServiceUnavailable, "Authentication service is unavailable.");
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return StatusCode(StatusCodes.Status502BadGateway, "Authentication service rejected the BlogApp client credentials.");
+            }
+
             return Ok(new {Message = "Login Successful",
-                    Token = token,
+                    Token = token.AccessToken,
+                    RefreshToken = token.RefreshToken,
+                    ExpiresIn = token.ExpiresIn,
                    Id
             });
+        }
+
+        [HttpPost("refresh")]
+        public async Task<IActionResult> Refresh(RefreshTokenDto dto)
+        {
+            try
+            {
+                var token = await jwtService.RefreshTokenAsync(dto, HttpContext.RequestAborted);
+                return Ok(new { Token = token.AccessToken, RefreshToken = token.RefreshToken, ExpiresIn = token.ExpiresIn });
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Unauthorized("Invalid refresh token.");
+            }
+            catch (HttpRequestException)
+            {
+                return StatusCode(StatusCodes.Status503ServiceUnavailable, "Authentication service is unavailable.");
+            }
         }
 
 
