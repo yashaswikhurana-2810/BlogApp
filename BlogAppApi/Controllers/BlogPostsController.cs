@@ -1,7 +1,6 @@
 using BlogAppApi.DTOs;
 using BlogAppApi.Services;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
@@ -34,6 +33,7 @@ namespace BlogAppApi.Controllers
         }
 
         // GET: api/blogposts/{id}
+        [Authorize]
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetBlogById(Guid id)
         {

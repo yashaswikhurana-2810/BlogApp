@@ -1,12 +1,9 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using BlogAppApi.Data;
 using BlogAppApi.DTOs;
 using BlogAppApi.Models;
 using BlogAppApi.Services;
-using System.Security.Claims;
-using Microsoft.AspNetCore.SignalR.Protocol;
 
 namespace BlogAppApi.Controllers
 {
