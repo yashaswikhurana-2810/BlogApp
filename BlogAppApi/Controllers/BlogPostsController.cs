@@ -1,7 +1,6 @@
-﻿using BlogAppApi.DTOs;
+using BlogAppApi.DTOs;
 using BlogAppApi.Services;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
@@ -21,7 +20,20 @@ namespace BlogAppApi.Controllers
             return Ok(blogs);
         }
 
+        // GET: api/blogposts/my  — returns only the authenticated user's posts
+        [Authorize]
+        [HttpGet("my")]
+        public async Task<IActionResult> GetMyBlogs()
+        {
+            var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+            var blogs = await blogService.GetBlogsByUserAsync(userId);
+
+            return Ok(blogs);
+        }
+
         // GET: api/blogposts/{id}
+        [Authorize]
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetBlogById(Guid id)
         {

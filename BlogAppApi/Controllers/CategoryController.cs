@@ -1,22 +1,17 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using BlogAppApi.Data;
+﻿using Microsoft.AspNetCore.Mvc;
 using BlogAppApi.DTOs;
 using BlogAppApi.Models;
 using BlogAppApi.Services;
-using System.Security.Claims;
-using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.AspNetCore.Authorization;
 
 namespace BlogAppApi.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class CategoryController(ICategoryService categoryService) : ControllerBase
     {
 
-        [Authorize]
         [HttpPost]
         public async Task<IActionResult> CreateCategory(CreateCategoryDto dto)
         {
@@ -30,7 +25,6 @@ namespace BlogAppApi.Controllers
             return Ok("Category created successfully.");
         }
 
-        [Authorize]
         [HttpGet]
         public async Task<List<Category>> GetCategories()
         {
@@ -38,7 +32,18 @@ namespace BlogAppApi.Controllers
 
             return result;
         }
+        [HttpDelete("{categoryId}")]
+        public async Task<IActionResult> DeleteCategory(Guid categoryId)
+        {
+            var result = await categoryService.DeleteCategoryAsync(categoryId);
 
+            if (!result)
+            {
+                return NotFound("Category not found.");
+            }
+
+            return Ok("Category deleted successfully.");
+        }
 
     }
 }

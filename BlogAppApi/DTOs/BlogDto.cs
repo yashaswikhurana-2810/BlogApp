@@ -1,4 +1,4 @@
-﻿using BlogAppApi.Models;
+using BlogAppApi.Models;
 using System.ComponentModel.DataAnnotations;
 namespace BlogAppApi.DTOs
 {
@@ -12,7 +12,9 @@ namespace BlogAppApi.DTOs
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
         public string AuthorName { get; set; } = string.Empty;
+        public Guid UserId { get; set; }
         public string CategoryName { get; set; } = string.Empty;
+        public Guid CategoryId { get; set; }
 
     }
 }

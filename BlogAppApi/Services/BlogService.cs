@@ -1,10 +1,7 @@
-﻿using BlogAppApi.Data;
+using BlogAppApi.Data;
 using BlogAppApi.DTOs;
 using BlogAppApi.Models;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Mvc;
-using System.Runtime.CompilerServices;
-using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace BlogAppApi.Services
 {
@@ -24,7 +21,9 @@ namespace BlogAppApi.Services
                     CreatedAt = b.CreatedAt,
                     UpdatedAt = b.UpdatedAt,
                     AuthorName = b.User.Name,
-                    CategoryName = b.Category.Name
+                    UserId = b.UserId,
+                    CategoryName = b.Category.Name,
+                    CategoryId = b.CategoryId
                 })
                 .ToListAsync();
 
@@ -48,12 +47,38 @@ namespace BlogAppApi.Services
                     CreatedAt = b.CreatedAt,
                     UpdatedAt = b.UpdatedAt,
                     AuthorName = b.User.Name,
-                    CategoryName = b.Category.Name
+                    UserId = b.UserId,
+                    CategoryName = b.Category.Name,
+                    CategoryId = b.CategoryId
                 })
                 .FirstOrDefaultAsync();
 
             return Blog;
 
+        }
+
+        public async Task<IEnumerable<BlogDto>> GetBlogsByUserAsync(Guid userId)
+        {
+            var blogs = await context.BlogPosts
+                .Where(b => b.UserId == userId)
+                .Select(b => new BlogDto
+                {
+                    Id = b.Id,
+                    Title = b.Title,
+                    Content = b.Content,
+                    ImageUrl = b.ImageUrl,
+                    IsPublished = b.IsPublished,
+                    CreatedAt = b.CreatedAt,
+                    UpdatedAt = b.UpdatedAt,
+                    AuthorName = b.User.Name,
+                    UserId = b.UserId,
+                    CategoryName = b.Category.Name,
+                    CategoryId = b.CategoryId
+                })
+                .OrderByDescending(b => b.CreatedAt)
+                .ToListAsync();
+
+            return blogs;
         }
 
         public async Task<bool> CreateBlogAsync(CreateBlogDto dto,Guid userId)
@@ -112,7 +137,7 @@ namespace BlogAppApi.Services
             if (blog.UserId != userId)
                 return false;
 
-            context.BlogPosts.Remove(blog);
+            blog.IsDeleted = true;
 
             await context.SaveChangesAsync();
 

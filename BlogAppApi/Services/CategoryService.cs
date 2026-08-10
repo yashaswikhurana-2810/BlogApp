@@ -1,10 +1,7 @@
 ﻿using BlogAppApi.DTOs;
 using BlogAppApi.Models;
 using BlogAppApi.Data;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.ComponentModel;
 
 namespace BlogAppApi.Services
 {
@@ -33,6 +30,18 @@ namespace BlogAppApi.Services
         public async Task<List<Category>> GetAllCategoriesAsync()
         {
             return await context.Categories.ToListAsync();
+        }
+
+        public async Task<bool> DeleteCategoryAsync(Guid categoryId)
+        {
+            var category = await context.Categories.FindAsync(categoryId);
+            if (category == null)
+            {
+                return false;
+            }
+            context.Categories.Remove(category);
+            await context.SaveChangesAsync();
+            return true;
         }
     }
 }
